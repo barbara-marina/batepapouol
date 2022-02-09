@@ -1,0 +1,236 @@
+* {
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Roboto', sans-serif;
+}
+
+::-webkit-scrollbar {
+    width: 0px;
+}
+
+.login-screen {
+    width: 100vw;
+    height: 100vh;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    background-color: #ffffff;
+}
+
+.login-screen img {
+    width: 130px;
+    height: 92px;
+
+    margin: 72px 0 94px 0;
+}
+
+.login-screen form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    gap: 15px;
+}
+
+.login-screen input {
+    width: 261px;
+    height: 54px;
+
+    background: #FFFFFF;
+    color: #000000;
+
+    border: 1px solid #D7D7D7;
+    border-radius: 4px;
+
+    font-size: 18px;
+    text-align: center;
+
+    display:flex;
+    align-items: center;
+}
+
+.login-screen input:placeholder-shown {
+    color: #aeaeae;
+}
+
+.login-screen button {
+    width: 109px;
+    height: 45px;
+
+    background: #E7E7E7;
+    color: #696969;
+
+    font-size: 18px;
+
+    border-radius: 9px;
+    border: none;
+}
+
+.loading-screen {
+    width: 100vw;
+    height: 100vh;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+
+    color: #ddaa77;
+
+    gap: 20px;
+}
+
+.loading-screen img {
+    width: 100px;
+    height: 100px;
+}
+
+.chat-screen {
+    width: 100vw;
+    height: 100vh;
+
+    display: flex;
+    flex-direction: column;
+
+    background-color: #f3f3f3;
+}
+
+.chat-screen header {
+    width: 100vw;
+    height: 80px;
+
+    background-color: #ffffff;
+
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.05);
+
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1;
+
+    padding: 0 22px 0 22px;
+}
+
+.chat-screen img {
+    width: 75px;
+    height: 53px;
+}
+
+.chat-screen header ion-icon {
+    width: 42px;
+    height: 31px;
+}
+
+.chat-screen footer{
+    width: 100vw;
+    height: 80px;
+
+    background-color: #ffffff;
+
+    display: flex;
+    align-items: center;
+
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    z-index: 1;
+
+    box-shadow: 0px -4px 6px rgba(0, 0, 0, 0.05);
+}
+
+.chat-screen form {
+    width: 100%;
+
+    display: flex;
+    justify-content: space-between;
+
+    padding: 0 27px;
+}
+
+.chat-screen button {
+    width: 26px;
+    height: 26px;
+
+    background-color: #ffffff;
+
+    border: none;
+}
+
+.chat-screen footer ion-icon{
+    width: 26px;
+    height: 26px;
+}
+
+.chat-screen input {
+    width: 76%;
+
+    border: none;
+
+    font-size: 18px;
+    text-align: start;
+
+    color: #000000;
+
+    font-size: 14px;
+}
+
+.chat-screen input:placeholder-shown {
+    font-style: italic;
+}
+
+.chat-screen section {
+    width: 100vw;
+    height: 100vh;
+
+    display: flex;
+    flex-direction: column;
+
+    margin: 106px 0 84px 0;
+    gap: 4px;
+
+    overflow-y: scroll;
+}
+
+.chat-screen article {
+    width: 100vw;
+    min-height: 40px;
+
+    display: flex;
+
+    padding: 8px 10px;
+    gap: 5px;
+}
+
+.chat-screen .status-message {
+    background: #DCDCDC;
+
+    border-radius: 2px;
+}
+
+.chat-screen .displayed-message {
+    background: #ffffff;  
+    
+    border-radius: 2px;
+}
+
+.chat-screen .private-message {
+    background: #FFDEDE;
+    
+    border-radius: 2px;
+}
+
+.chat-screen strong {
+    font-weight: 700;
+}
+
+.chat-screen .time {
+     color: #aaaaaa;
+}
