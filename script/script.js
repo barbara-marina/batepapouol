@@ -1,14 +1,25 @@
+let userName = undefined;
+
+loginScreen();
+
 function loginScreen() {
     document.querySelector('body').innerHTML = `
         <main class="login-screen">
             <img src="./assets/logo_login.png" alt="logo">
 
             <form>
-                <input type="text" placeholder="Digite seu nome">
-                <button>Entrar</button>
+                <input id="userName" type="text" placeholder="Digite seu nome">
+                <button type="button" onclick="enterChat()">Entrar</button>
             </form>
         </main>
     `;
+}
+
+function enterChat() {
+    userName = document.getElementById("userName").value;
+    const promise = axios.post('https://mock-api.driven.com.br/api/v4/uol/participants', {name:userName});
+    promise.then(chatScreen);
+    promise.catch(errorMessage);
 }
 
 function loadingScreen() {
@@ -18,10 +29,25 @@ function loadingScreen() {
             <p>carregando...</p>
         </main>
     `;
+}
 
+function errorMessage() {
+    document.querySelector('body').innerHTML = `
+        <main class="login-screen">
+            <img src="./assets/logo_login.png" alt="logo">
+
+            <form>
+                <input id="userName" type="text" placeholder="Digite seu nome">
+                <p>Digite outro nome, esse já está em uso!</p>
+                <button type="button" onclick="enterChat()">Entrar</button>
+            </form>
+        </main>
+    `;
 }
 
 function chatScreen() {
+    setInterval(keepConnection, 5000);
+
     document.querySelector('body').innerHTML = `
         <main class="chat-screen">
             <header>
@@ -30,22 +56,6 @@ function chatScreen() {
             </header>
 
             <section class="messages">
-                <article class="status-message">
-                    <p class="time">(09:21:45)</p>
-                    <p class="status"><strong>João</strong> entra na sala...<p>
-                </article>
-
-                <article class="displayed-message">
-                    <p class="time">(09:21:45)</p>
-                    <p class="sender-to-receiver"><strong>João</strong> para <strong>Todos</strong> : </p>
-                    <p class="message-tex"> blah blah blah</p>
-                </article>
-
-                <article class="private-message">
-                    <p class="time">(09:21:45)</p>
-                    <p class="sender-to-receiver"><strong>João</strong> para <strong>Maria</strong> : </p>
-                    <p class="message-tex"> blah blah blah</p>
-                </article>
             </section>
 
             <footer>
@@ -56,5 +66,55 @@ function chatScreen() {
             </footer>
         </main>
     `;
+    fetchMessages();
+    setInterval(fetchMessages, 3000);
 
+}
+
+function keepConnection(){
+    const promise = axios.post('https://mock-api.driven.com.br/api/v4/uol/status', {name:userName});
+}
+
+function fetchMessages(){
+    const promise = axios.get("https://mock-api.driven.com.br/api/v4/uol/messages");
+    promise.then(filterMessages);
+}
+
+function filterMessages(response) {
+    const messages = document.querySelector(".messages");
+    messages.innerHTML = "";
+
+    for (let i = 0; i < response.data.length; i++) {
+        let from = response.data[i].from;
+        let to = response.data[i].to;
+        let text = response.data[i].text;
+        let type = response.data[i].type;
+        let time = response.data[i].time;
+
+        if(type === "status"){
+            messages.innerHTML += `
+                <article class="status-message">
+                    <p class="time">(${time})</p>
+                    <p class="status"><strong>${from}</strong> ${text}<p>
+                </article>
+            `;
+        } else if (type === "message") {
+            messages.innerHTML += `
+                <article class="displayed-message">
+                    <p class="time">${time}</p>
+                    <p class="sender-to-receiver"><strong>${from}</strong> para <strong>${to}</strong> : </p>
+                    <p class="message-tex"> ${text}</p>
+                </article>
+            `;
+        } else if ((type === "private_message") && (to === userName)) {
+            messages.innerHTML += `
+                <article class="private-message">
+                    <p class="time">(09:21:45)</p>
+                    <p class="sender-to-receiver"><strong>João</strong> para <strong>Maria</strong> : </p>
+                    <p class="message-tex"> blah blah blah</p>
+                </article>
+            `;
+        }
+    }
+    messages.childNodes[messages.childNodes.length - 2].scrollIntoView();
 }
