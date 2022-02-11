@@ -18,6 +18,7 @@ function loginScreen() {
 function enterChat() {
     userName = document.getElementById("userName").value;
     const promise = axios.post('https://mock-api.driven.com.br/api/v4/uol/participants', {name:userName});
+    loadingScreen();
     promise.then(chatScreen);
     promise.catch(errorMessage);
 }
@@ -60,8 +61,8 @@ function chatScreen() {
 
             <footer>
                 <form>
-                    <input type="text" placeholder="Escreva aqui...">
-                    <button><ion-icon name="paper-plane-outline"></ion-icon></button>
+                    <input id="userMessage" type="text" placeholder="Escreva aqui...">
+                    <button type="button" onclick="sendMessage()"><ion-icon name="paper-plane-outline"></ion-icon></button>
                 </form>
             </footer>
         </main>
@@ -94,27 +95,30 @@ function filterMessages(response) {
         if(type === "status"){
             messages.innerHTML += `
                 <article class="status-message">
-                    <p class="time">(${time})</p>
-                    <p class="status"><strong>${from}</strong> ${text}<p>
+                    <em>(${time})</em> <strong>${from}</strong> ${text}
                 </article>
             `;
-        } else if (type === "message") {
+        } else if ((type === "message") && (to === "Todos")) {
             messages.innerHTML += `
                 <article class="displayed-message">
-                    <p class="time">${time}</p>
-                    <p class="sender-to-receiver"><strong>${from}</strong> para <strong>${to}</strong> : </p>
-                    <p class="message-tex"> ${text}</p>
+                    <em>(${time})</em> <strong>${from}</strong> para <strong>${to}</strong>: ${text}
                 </article>
             `;
         } else if ((type === "private_message") && (to === userName)) {
             messages.innerHTML += `
                 <article class="private-message">
-                    <p class="time">(09:21:45)</p>
-                    <p class="sender-to-receiver"><strong>João</strong> para <strong>Maria</strong> : </p>
-                    <p class="message-tex"> blah blah blah</p>
+                    <em>(${time})</em> <strong>${from}</strong> reservadamente para <strong>${to}</strong>: ${text}
                 </article>
             `;
+        } else {
+            continue;
         }
     }
     messages.childNodes[messages.childNodes.length - 2].scrollIntoView();
+}
+
+function sendMessage() {
+    let userMessage = document.getElementById("userMessage").value;
+    
+    const promise = axios.post('https://mock-api.driven.com.br/api/v4/uol/messages', { from: userName, to: "Todos", text: userMessage, type: "message"});
 }

@@ -212,10 +212,7 @@ body {
     width: 100vw;
     min-height: 40px;
 
-    display: flex;
-
     padding: 8px 10px;
-    gap: 5px;
 }
 
 .chat-screen .status-message {
@@ -240,6 +237,6 @@ body {
     font-weight: 700;
 }
 
-.chat-screen .time {
+.chat-screen em {
      color: #aaaaaa;
 }
