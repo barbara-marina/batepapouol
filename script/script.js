@@ -6,13 +6,11 @@ function loginScreen() {
     document.querySelector('body').innerHTML = `
         <main class="login-screen">
             <img src="./assets/logo_login.png" alt="logo">
-
-            <form>
-                <input id="userName" type="text" placeholder="Digite seu nome">
-                <button type="button" onclick="enterChat()">Entrar</button>
-            </form>
+            <input id="userName" type="text" placeholder="Digite seu nome">
+            <button type="button" onclick="enterChat()" onfo>Entrar</button>
         </main>
     `;
+    sendWithEnter();
 }
 
 function enterChat() {
@@ -44,6 +42,8 @@ function errorMessage() {
             </form>
         </main>
     `;
+    sendWithEnter();
+
 }
 
 function chatScreen() {
@@ -60,13 +60,12 @@ function chatScreen() {
             </section>
 
             <footer>
-                <form>
-                    <input id="userMessage" type="text" placeholder="Escreva aqui...">
-                    <button type="button" onclick="sendMessage()"><ion-icon name="paper-plane-outline"></ion-icon></button>
-                </form>
+                <input id="userMessage" type="text" placeholder="Escreva aqui...">
+                <button type="button" onclick="sendMessage()"><ion-icon name="paper-plane-outline"></ion-icon></button>
             </footer>
         </main>
     `;
+    sendWithEnter();
     fetchMessages();
     setInterval(fetchMessages, 3000);
 
@@ -117,8 +116,22 @@ function filterMessages(response) {
     messages.childNodes[messages.childNodes.length - 2].scrollIntoView();
 }
 
-function sendMessage() {
-    let userMessage = document.getElementById("userMessage").value;
-    
-    const promise = axios.post('https://mock-api.driven.com.br/api/v4/uol/messages', { from: userName, to: "Todos", text: userMessage, type: "message"});
+function sendMessage() {    
+    const promise = axios.post('https://mock-api.driven.com.br/api/v4/uol/messages', { from: userName, to: "Todos", text: document.getElementById("userMessage").value, type: "message"});
+
+    document.getElementById("userMessage").value = "";
+
+    promise.then(fetchMessages);
+    promise.catch(() => {location.reload()});
+}
+
+function sendWithEnter() {
+    document.querySelector("input").onkeydown =
+    (e) => {
+        if ((e.code === "Enter") && (document.querySelector("input").attributes[0].value === "userName")) {
+            enterChat();
+        }else if ((e.code === "Enter") && (document.querySelector("input").attributes[0].value === "userMessage")) {
+            sendMessage();
+        }
+    };
 }
