@@ -1,4 +1,5 @@
 let userName = undefined;
+let userPrivate = undefined;
 
 loginScreen();
 
@@ -68,24 +69,22 @@ function chatScreen() {
         <span class="overlay-screen hidden" onclick="expandMenu()"></span>
         <nav class="menu hidden">
             <h1>Escolha um contato para enviar mensagem:</h1>
-            <ul>
-
-            </ul>
+            <ul class="participants"></ul>
             <h1>Escolha a visibilidade:</h1>
             <ul>
-                <li data-identifier="visibility">
+                <li class="visibility" data-identifier="visibility" onclick="selectContact(this)">
                     <div>
                         <ion-icon name="lock-open"></ion-icon>
                         Público
                     </div>
-                    <ion-icon name="checkmark-sharp" class="check"></ion-icon>
+                    <ion-icon name="checkmark-sharp" class="hidden check"></ion-icon>
                 </li>
-                <li data-identifier="visibility">
+                <li class="visibility" data-identifier="visibility" onclick="selectContact(this)">
                     <div>
                         <ion-icon name="lock-open"></ion-icon>
                         Reservadamente
                     </div>
-                    <ion-icon name="checkmark-sharp" class="check hidden"></ion-icon>
+                    <ion-icon name="checkmark-sharp" class="hidden"></ion-icon>
                 </li>
             </ul>
         </nav>
@@ -130,7 +129,7 @@ function filterMessages(response) {
                     <em>(${time})</em> <strong>${from}</strong> para <strong>${to}</strong>: ${text}
                 </article>
             `;
-        } else if ((type === "private_message") && (to === userName)) {
+        } else if ((type === "private_message") && ((to === userName) || (from === userName))) {
             messages.innerHTML += `
                 <article class="private-message" data-identifier="message">
                     <em>(${time})</em> <strong>${from}</strong> reservadamente para <strong>${to}</strong>: ${text}
@@ -174,27 +173,61 @@ function fetchContact() {
 }
 
 function filterContact(response) {
-    let contact = document.querySelector("ul");
-    contact.innerHTML = `
-        <li data-identifier="participant">
-            <div class="contact">
+    let participant = document.querySelector("ul");
+    participant.innerHTML = `
+        <li class="participant" data-identifier="participant" onclick="selectContact(this)">
+            <div>
                 <ion-icon name="people-sharp"></ion-icon>
                 Todos
             </div>
-            <ion-icon name="checkmark-sharp" class="check"></ion-icon>
+            <ion-icon name="checkmark-sharp" class="hidden check"></ion-icon>
         </li>
     `;
 
     for (let i = 0; i < response.data.length; i++) {
-        contact.innerHTML += `
-            <li data-identifier="participant">
-                <div class="contact">
-                    <ion-icon name="person-circle-sharp"></ion-icon>
-                    ${response.data[i].name}
+        participant.innerHTML += `
+            <li class="participant" data-identifier="participant" onclick="selectContact(this)">
+                <div>
+                    <ion-icon name="person-circle-sharp"></ion-icon>${response.data[i].name}
                 </div>
-                <ion-icon name="checkmark-sharp" class="check hidden"></ion-icon>
+                <ion-icon name="checkmark-sharp" class="hidden"></ion-icon>
             </li>
         `
     }
 
+    checkUserPrivateActivity(response);
+
+}
+
+function selectContact(selected) {
+    fetchContact();
+    const participantIsSelected = document.querySelector(".participant .check");
+    const visibilityIsSelected = document.querySelector(".visibility .check");
+    const check =  selected.childNodes[3];
+    if ((participantIsSelected !== null) && (selected.classList.contains("participant"))) {
+        participantIsSelected.classList.remove("check");
+        check.classList.add("check");
+        userPrivate = selected.innerText;
+    } else if ((visibilityIsSelected !== null) && (selected.classList.contains("visibility"))) {        
+        visibilityIsSelected.classList.remove("check");
+        check.classList.add("check");
+    }
+
+}
+
+function checkUserPrivateActivity(response) {
+    let index = response.data.findIndex(filterUserPrivate);
+    const selected = document.querySelector(".participants").childNodes[(index*2)+3];
+    const selectEveryone =  document.querySelector(".participants").childNodes[1];
+
+    if (index !== -1) {
+        selectContact(selected);
+    } else {
+        selectContact(selectEveryone);
+    }
+
+}
+
+function filterUserPrivate(participant) {
+    return participant.name === userPrivate;
 }

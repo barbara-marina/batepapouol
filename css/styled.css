@@ -265,6 +265,8 @@ nav {
     z-index: 2;
 
     padding: 18px 22px 0 27px;
+
+    overflow-y: scroll;
 }
 
 nav h1 {
@@ -287,16 +289,20 @@ ul li {
     padding-bottom: 18px;
 }
 
-li ion-icon {
+li div ion-icon {
     width: 25px;
 
-    color: #28BB25;
-}
-
-li div ion-icon {
     color: #000000;
 }
 
 .hidden {
     display: none;
+}
+
+li .check {
+    width: 25px;
+
+    display: initial;
+
+    color: #28BB25;
 }
