@@ -238,3 +238,65 @@ body {
 .chat-screen em {
      color: #aaaaaa;
 }
+
+span{
+    width: 31%;
+    height: 100%;
+
+    background-color: rgba(0, 0, 0, 0.6);
+
+    position: fixed;
+    top: 0;
+    left: 0;
+
+    z-index: 2;
+}
+
+nav {
+    width: 69%;
+    height: 100%;
+
+    background-color: #ffffff;
+
+    position: fixed;
+    top: 0;
+    right: 0;
+
+    z-index: 2;
+
+    padding: 18px 22px 0 27px;
+}
+
+nav h1 {
+    width: 100%;
+    height: auto;
+
+    font-size: 16px;
+    font-weight: 700;
+    line-height: 19px;
+    text-align: center;
+
+    padding: 7px 23px 25px 18px;
+}
+
+ul li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    padding-bottom: 18px;
+}
+
+li ion-icon {
+    width: 25px;
+
+    color: #28BB25;
+}
+
+li div ion-icon {
+    color: #000000;
+}
+
+.hidden {
+    display: none;
+}
