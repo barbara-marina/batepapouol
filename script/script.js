@@ -1,13 +1,16 @@
-let userName = undefined;
-let userPrivate = undefined;
+let userName;
+let participantSelected;
+let participantSelectedClass;
+let typeMessage;
 
-loginScreen();
+startScreen();
 
-function loginScreen() {
-    document.querySelector('body').innerHTML = `
+function startScreen() {
+    document.querySelector("body").innerHTML = `
         <main class="login-screen">
             <img src="./assets/logo_login.png" alt="logo">
             <input id="userName" type="text" placeholder="Digite seu nome" data-identifier="enter-name">
+            <p class="error-message"></p>
             <button type="button" onclick="enterChat()" data-identifier="start">Entrar</button>
         </main>
     `;
@@ -16,44 +19,30 @@ function loginScreen() {
 
 function enterChat() {
     userName = document.getElementById("userName").value;
-    const promise = axios.post('https://mock-api.driven.com.br/api/v4/uol/participants', {name:userName});
+    
+    if ((userName === "Todos") || (userName === "Todos "))
+        errorMessage(userName);
+
+    const promise = axios.post("https://mock-api.driven.com.br/api/v4/uol/participants", {name:userName});
     loadingScreen();
     promise.then(chatScreen);
     promise.catch(errorMessage);
 }
 
 function loadingScreen() {
-    document.querySelector('body').innerHTML = `
-        <main class="loading-screen">
+    document.querySelector("body").innerHTML = `
+        <main class="loading-screen hidden">
             <img src="./assets/loading.gif" alt="carregando...">
             <p>carregando...</p>
         </main>
     `;
 }
 
-function errorMessage() {
-    document.querySelector('body').innerHTML = `
-        <main class="login-screen">
-            <img src="./assets/logo_login.png" alt="logo">
-
-            <form>
-                <input id="userName" type="text" placeholder="Digite seu nome" data-identifier="enter-name">
-                <p>Digite outro nome, esse já está em uso!</p>
-                <button type="button" onclick="enterChat()" data-identifier="start"> Entrar</button>
-            </form>
-        </main>
-    `;
-    sendWithEnter();
-
-}
-
 function chatScreen() {
-    setInterval(keepConnection, 5000);
-
-    document.querySelector('body').innerHTML = `
+    document.querySelector("body").innerHTML = `
         <main class="chat-screen">
             <header>
-                <img src="./assets/logo_uol.png" alt="logo_uol">
+                <img src="./assets/logo_uol.png" alt="logo_uol" onclick="location.reload()">
                 <ion-icon name="people-sharp" onclick="expandMenu()"></ion-icon>
             </header>
 
@@ -73,14 +62,14 @@ function chatScreen() {
             <ul class="participants"></ul>
             <h1>Escolha a visibilidade:</h1>
             <ul class="visibilities">
-                <li class="visibility" data-identifier="visibility" onclick="selectContact(this)">
+                <li class="visibility" data-identifier="visibility">
                     <div>
                         <ion-icon name="lock-open"></ion-icon>
                         Público
                     </div>
                     <ion-icon name="checkmark-sharp" class="hidden check"></ion-icon>
                 </li>
-                <li class="visibility" data-identifier="visibility" onclick="selectContact(this)">
+                <li class="visibility" data-identifier="visibility">
                     <div>
                         <ion-icon name="lock-open"></ion-icon>
                         Reservadamente
@@ -91,78 +80,62 @@ function chatScreen() {
         </nav>
     `;
     sendWithEnter();
+    setInterval(keepConnection, 5000);
     fetchMessages();
-    fetchContact();
     setInterval(fetchMessages, 3000);
-    setInterval(fetchContact, 10000);
+    fetchParticipants();
+    setInterval(fetchParticipants, 10000);
+}
 
+function errorMessage() {
+    startScreen();
+    document.querySelector(".error-message").innerHTML = `O nome de usuário já existe na sala ou não é válido. Tente outro!`;
 }
 
 function keepConnection(){
-    const promise = axios.post('https://mock-api.driven.com.br/api/v4/uol/status', {name:userName});
+    const promise = axios.post("https://mock-api.driven.com.br/api/v4/uol/status", {name:userName});
 }
 
 function fetchMessages(){
     const promise = axios.get("https://mock-api.driven.com.br/api/v4/uol/messages");
-    promise.then(filterMessages);
+    promise.then(showMessages);
 }
 
-function filterMessages(response) {
-    const messages = document.querySelector(".messages");
-    messages.innerHTML = "";
-
-    for (let i = 0; i < response.data.length; i++) {
-        let from = response.data[i].from;
-        let to = response.data[i].to;
-        let text = response.data[i].text;
-        let type = response.data[i].type;
-        let time = response.data[i].time;
-
-        if(type === "status"){
-            messages.innerHTML += `
+function showMessages(response) {
+    document.querySelector(".messages").innerHTML = "";
+    response.data.forEach( participant => {
+        if(participant.type === "status"){
+            document.querySelector(".messages").innerHTML += `
                 <article class="status-message" data-identifier="message">
-                    <em>(${time})</em> <strong>${from}</strong> ${text}
+                    <em>(${participant.time})</em> <strong>${participant.from}</strong> ${participant.text}
                 </article>
             `;
-        } else if ((type === "message") && (to === "Todos")) {
-            messages.innerHTML += `
+        } else if ((participant.type === "message") && (participant.to === "Todos")) {
+            document.querySelector(".messages").innerHTML += `
                 <article class="displayed-message" data-identifier="message">
-                    <em>(${time})</em> <strong>${from}</strong> para <strong>${to}</strong>: ${text}
+                    <em>(${participant.time})</em> <strong>${participant.from}</strong> para <strong>${participant.to}</strong>: ${participant.text}
                 </article>
             `;
-        } else if ((type === "private_message") && ((to === userName) || (from === userName))) {
-            messages.innerHTML += `
+        } else if ((participant.type === "private_message") && ((participant.to === userName) || (participant.from === userName))) {
+            document.querySelector(".messages").innerHTML += `
                 <article class="private-message" data-identifier="message">
-                    <em>(${time})</em> <strong>${from}</strong> reservadamente para <strong>${to}</strong>: ${text}
+                    <em>(${participant.time})</em> <strong>${participant.from}</strong> reservadamente para <strong>${participant.to}</strong>: ${participant.text}
                 </article>
             `;
-        } else {
-            continue;
-        }
-    }
-    messages.childNodes[messages.childNodes.length - 2].scrollIntoView();
-
+        } 
+    });
+    document.querySelector(".messages").childNodes[document.querySelector(".messages").childNodes.length - 2].scrollIntoView();
 }
 
-function sendMessage() {    
-    let typeMessage = "";
-    if(userPrivate !== "Todos") {
-        typeMessage = "private_message";
-    } else {
-        typeMessage = "message;"
-    }
-
-    const promise = axios.post('https://mock-api.driven.com.br/api/v4/uol/messages', { from: userName, to: userPrivate, text: document.getElementById("userMessage").value, type: typeMessage});
-
+function sendMessage() {
+    const promise = axios.post("https://mock-api.driven.com.br/api/v4/uol/messages", { from: userName, to: participantSelected, text: document.getElementById("userMessage").value, type: typeMessage});
     document.getElementById("userMessage").value = "";
-
     promise.then(fetchMessages);
-    promise.catch(() => {location.reload()});
+    promise.catch(() => location.reload());
 }
 
 function sendWithEnter() {
-    document.querySelector("input").onkeydown =
-    (e) => {
+    document.querySelector("input").onkeydown = (e) => {
         if ((e.code === "Enter") && (document.querySelector("input").attributes[0].value === "userName")) {
             enterChat();
         }else if ((e.code === "Enter") && (document.querySelector("input").attributes[0].value === "userMessage")) {
@@ -176,101 +149,72 @@ function expandMenu() {
     document.querySelector(".menu").classList.toggle("hidden");
 }
 
-function fetchContact() {
+function fetchParticipants() {
     const promise = axios.get("https://mock-api.driven.com.br/api/v4/uol/participants");
-    promise.then(filterContact);
+    promise.then(showParticipants);
 }
 
-function filterContact(response) {
-    let participant = document.querySelector("ul");
-    participant.innerHTML = `
-        <li class="participant" data-identifier="participant" onclick="selectContact(this)">
+function showParticipants(response) {
+    document.querySelector("ul").innerHTML = `
+        <li class="participant" data-identifier="participant" onclick="selectParticipant(this)">
             <div>
                 <ion-icon name="people-sharp"></ion-icon>
-                <p>Todos</p>
+                <p class="all-participants">Todos</p>
             </div>
             <ion-icon name="checkmark-sharp" class="hidden check"></ion-icon>
         </li>
     `;
 
-    for (let i = 0; i < response.data.length; i++) {
-        participant.innerHTML += `
-            <li class="participant" data-identifier="participant" onclick="selectContact(this)">
+    response.data.forEach( participant => {
+        document.querySelector("ul").innerHTML += `
+            <li class="participant" data-identifier="participant" onclick="selectParticipant(this)">
                 <div>
                     <ion-icon name="person-circle-sharp"></ion-icon>
-                    <p>${response.data[i].name}</p>
+                    <p class="private-participant">${participant.name}</p>
                 </div>
                 <ion-icon name="checkmark-sharp" class="hidden"></ion-icon>
             </li>
-        `
-    }
-    desativarClickEmMim(response);
-    checkUserPrivateActivity(response);
-
+        `;
+    });
+    disableClick(response.data);
+    checkActivity(response.data);
 }
 
-function selectContact(selected) {
-    const participantIsSelected = document.querySelector(".participant .check");
-    const visibilityIsSelected = document.querySelector(".visibility .check");
-    const check =  selected.childNodes[3];
-    const textoDentro = selected.childNodes[1].childNodes[3].innerText;
-    const iconTodos = document.querySelector(".visibilities").childNodes[1].childNodes[3];
-    const iconQualquer = document.querySelector(".visibilities").childNodes[3].childNodes[3];
+function selectParticipant(selected) {
+    participantSelected = selected.childNodes[1].childNodes[3].innerText;
+    participantSelectedClass = selected.childNodes[1].childNodes[3].attributes[0].value;
 
-    if ((participantIsSelected !== null)) {
-        participantIsSelected.classList.remove("check");
-        check.classList.add("check");
-        userPrivate = selected.childNodes[1].childNodes[3].innerText;
-    }
+    if ((document.querySelector(".participant .check") !== null)) {
+        document.querySelector(".participant .check").classList.remove("check");
+        selected.childNodes[3].classList.add("check");
 
-    if ((textoDentro !== "Todos") && (iconTodos !== null)){
-        iconTodos.classList.remove("check");
-        iconQualquer.classList.add("check");
-        alterarHTMLPrivada();
-    } else if ((textoDentro === "Todos") && (iconQualquer !== null)) {
-        iconQualquer.classList.remove("check");
-        iconTodos.classList.add("check");
-        limparHTML();
+        if (participantSelectedClass == "private-participant"){
+            document.querySelector(".visibilities").childNodes[1].childNodes[3].classList.remove("check");
+            document.querySelector(".visibilities").childNodes[3].childNodes[3].classList.add("check");
+            document.querySelector(".private").innerHTML = `Enviando para ${participantSelected} (reservadamente)`;
+            typeMessage = "private_message";
+        } else {
+            document.querySelector(".visibilities").childNodes[3].childNodes[3].classList.remove("check");
+            document.querySelector(".visibilities").childNodes[1].childNodes[3].classList.add("check");
+            document.querySelector(".private").innerHTML = "";
+            typeMessage = "message";
+        }
     }
 }
 
-function checkUserPrivateActivity(response) {
-    let index = response.data.findIndex(filterUserPrivate);
-    const selected = document.querySelector(".participants").childNodes[(index*2)+3];
-    const selectEveryone =  document.querySelector(".participants").childNodes[1];
-
+function checkActivity(participants) {
+    let index = participants.findIndex(participant => participant.name === participantSelected);
 
     if (index !== -1) {
-        selectContact(selected);
+        selectParticipant(document.querySelector(".participants").childNodes[(index*2)+3]);
     } else {
-        selectContact(selectEveryone);
-    }
-
-}
-
-function filterUserPrivate(participant) {
-    return participant.name === userPrivate;
-}
-
-function filterUserName(user) {
-    return user.name === userName;
-}
-
-function desativarClickEmMim(response) {
-    let index = response.data.findIndex(filterUserName);
-    const selectedUser = document.querySelector(".participants").childNodes[(index*2)+3];
-
-    if (index !== -1) {
-        selectedUser.classList.add("desativa-click");
+        selectParticipant(document.querySelector(".participants").childNodes[1]);
     }
 }
 
-function alterarHTMLPrivada() {
-    document.querySelector(".private").innerHTML = `
-        Enviando para ${userPrivate} (reservadamente)    
-    `;
-}
+function disableClick(participants) {
+    let index = participants.findIndex(participant => participant.name === userName);
 
-function limparHTML() {
-    document.querySelector(".private").innerHTML = "";
+    if (index !== -1)
+        document.querySelector(".participants").childNodes[(index*2)+3].classList.add("disable-click");
 }
